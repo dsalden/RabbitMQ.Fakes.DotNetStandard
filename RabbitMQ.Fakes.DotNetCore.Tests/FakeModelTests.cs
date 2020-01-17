@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using FluentAssertions;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Framing;
 using RabbitMQ.Fakes.models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Queue = RabbitMQ.Fakes.models.Queue;
 
 namespace RabbitMQ.Fakes.Tests

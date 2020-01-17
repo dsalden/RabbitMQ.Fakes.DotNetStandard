@@ -29,29 +29,21 @@ namespace RabbitMQ.Fakes
             return this;
         }
 
-        public FakeConnection UnderlyingConnection
-        {
-            get { return (FakeConnection)Connection; }
-        }
+        public FakeConnection UnderlyingConnection => (FakeConnection)Connection;
 
         public List<FakeModel> UnderlyingModel
         {
             get
             {
                 var connection = UnderlyingConnection;
-                if (connection == null)
-                    return null;
 
-                return connection.Models;
+                return connection?.Models;
             }
         }
 
         public override IConnection CreateConnection()
         {
-            if (Connection == null)
-                Connection = new FakeConnection(Server);
-
-            return Connection;
+            return Connection ?? (Connection = new FakeConnection(Server));
         }
     }
 }

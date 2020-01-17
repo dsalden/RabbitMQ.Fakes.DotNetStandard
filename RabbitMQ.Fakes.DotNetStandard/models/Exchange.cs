@@ -18,7 +18,7 @@ namespace RabbitMQ.Fakes.models
 
         public void PublishMessage(RabbitMessage message)
         {
-            this.Messages.Enqueue(message);
+            Messages.Enqueue(message);
 
             if (string.IsNullOrWhiteSpace(message.RoutingKey))
             {

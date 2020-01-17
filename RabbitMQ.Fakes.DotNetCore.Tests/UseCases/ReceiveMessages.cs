@@ -12,8 +12,6 @@ namespace RabbitMQ.Fakes.Tests.UseCases
     [TestFixture]
     public class ReceiveMessages
     {
-        private static readonly Dictionary<string, string> HeaderTemplate;
-
         [Test]
         public void ReceiveMessagesOnQueue()
         {

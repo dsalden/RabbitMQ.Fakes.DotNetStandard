@@ -108,8 +108,7 @@ namespace RabbitMQ.Fakes
 
         public void ExchangeDelete(string exchange, bool ifUnused)
         {
-            Exchange removedExchange;
-            _server.Exchanges.TryRemove(exchange, out removedExchange);
+            _server.Exchanges.TryRemove(exchange, out _);
         }
 
         public void ExchangeDelete(string exchange)
@@ -134,17 +133,12 @@ namespace RabbitMQ.Fakes
 
         public void ExchangeBind(string destination, string source, string routingKey, IDictionary<string, object> arguments)
         {
-            Exchange exchange;
-            _server.Exchanges.TryGetValue(source, out exchange);
-
-            Queue queue;
-            _server.Queues.TryGetValue(destination, out queue);
+            _server.Exchanges.TryGetValue(source, out var exchange);
+            _server.Queues.TryGetValue(destination, out var queue);
 
             var binding = new ExchangeQueueBinding { Exchange = exchange, Queue = queue, RoutingKey = routingKey };
-            if (exchange != null)
-                exchange.Bindings.AddOrUpdate(binding.Key, binding, (k, v) => binding);
-            if (queue != null)
-                queue.Bindings.AddOrUpdate(binding.Key, binding, (k, v) => binding);
+            exchange?.Bindings.AddOrUpdate(binding.Key, binding, (k, v) => binding);
+            queue?.Bindings.AddOrUpdate(binding.Key, binding, (k, v) => binding);
         }
 
         public void ExchangeBind(string destination, string source, string routingKey)
@@ -154,18 +148,12 @@ namespace RabbitMQ.Fakes
 
         public void ExchangeUnbind(string destination, string source, string routingKey, IDictionary<string, object> arguments)
         {
-            Exchange exchange;
-            _server.Exchanges.TryGetValue(source, out exchange);
-
-            Queue queue;
-            _server.Queues.TryGetValue(destination, out queue);
+            _server.Exchanges.TryGetValue(source, out var exchange);
+            _server.Queues.TryGetValue(destination, out var queue);
 
             var binding = new ExchangeQueueBinding { Exchange = exchange, Queue = queue, RoutingKey = routingKey };
-            ExchangeQueueBinding removedBinding;
-            if (exchange != null)
-                exchange.Bindings.TryRemove(binding.Key, out removedBinding);
-            if (queue != null)
-                queue.Bindings.TryRemove(binding.Key, out removedBinding);
+            exchange?.Bindings.TryRemove(binding.Key, out _);
+            queue?.Bindings.TryRemove(binding.Key, out _);
         }
 
         public void ExchangeUnbind(string destination, string source, string routingKey)
@@ -233,16 +221,14 @@ namespace RabbitMQ.Fakes
 
         public uint QueuePurge(string queue)
         {
-            Queue instance;
-            _server.Queues.TryGetValue(queue, out instance);
+            _server.Queues.TryGetValue(queue, out var instance);
 
             if (instance == null)
                 return 0u;
 
             while (!instance.Messages.IsEmpty)
             {
-                RabbitMessage itemToRemove;
-                instance.Messages.TryDequeue(out itemToRemove);
+                instance.Messages.TryDequeue(out _);
             }
 
             return 1u;
@@ -250,8 +236,7 @@ namespace RabbitMQ.Fakes
 
         public uint QueueDelete(string queue, bool ifUnused, bool ifEmpty)
         {
-            Queue instance;
-            _server.Queues.TryRemove(queue, out instance);
+            _server.Queues.TryRemove(queue, out var instance);
 
             return instance != null ? 1u : 0u;
         }
@@ -317,8 +302,7 @@ namespace RabbitMQ.Fakes
 
         public string BasicConsume(string queue, bool noAck, string consumerTag, bool noLocal, bool exclusive, IDictionary<string, object> arguments, IBasicConsumer consumer)
         {
-            Queue queueInstance;
-            _server.Queues.TryGetValue(queue, out queueInstance);
+            _server.Queues.TryGetValue(queue, out var queueInstance);
 
             if (queueInstance != null)
             {
@@ -363,11 +347,9 @@ namespace RabbitMQ.Fakes
 
         public void BasicCancel(string consumerTag)
         {
-            IBasicConsumer consumer;
-            _consumers.TryRemove(consumerTag, out consumer);
+            _consumers.TryRemove(consumerTag, out var consumer);
 
-            if (consumer != null)
-                consumer.HandleBasicCancelOk(consumerTag);
+            consumer?.HandleBasicCancelOk(consumerTag);
         }
 
         private long _lastDeliveryTag;
@@ -482,24 +464,18 @@ namespace RabbitMQ.Fakes
             else
             {
                 BasicAckSingle(deliveryTag);
-            }            
+            }
         }
 
         private bool BasicAckSingle(ulong deliveryTag)
         {
-            RabbitMessage message;
-            WorkingMessages.TryRemove(deliveryTag, out message);
+            WorkingMessages.TryRemove(deliveryTag, out var message);
 
-            if (message != null)
-            {
-                Queue queue;
-                _server.Queues.TryGetValue(message.Queue, out queue);
+            if (message == null) return false;
 
-                if (queue != null)
-                {
-                    queue.Messages.TryDequeue(out message);
-                }
-            }
+            _server.Queues.TryGetValue(message.Queue, out var queue);
+
+            queue?.Messages.TryDequeue(out message);
 
             return message != null;
         }
@@ -558,13 +534,9 @@ namespace RabbitMQ.Fakes
             {
                 foreach (var message in WorkingMessages)
                 {
-                    Queue queueInstance;
-                    _server.Queues.TryGetValue(message.Value.Queue, out queueInstance);
+                    _server.Queues.TryGetValue(message.Value.Queue, out var queueInstance);
 
-                    if (queueInstance != null)
-                    {
-                        queueInstance.PublishMessage(message.Value);
-                    }
+                    queueInstance?.PublishMessage(message.Value);
                 }
             }
 
@@ -638,44 +610,44 @@ namespace RabbitMQ.Fakes
 
         event EventHandler<BasicAckEventArgs> IModel.BasicAcks
         {
-            add { throw new NotImplementedException(); }
-            remove { throw new NotImplementedException(); }
+            add => throw new NotImplementedException();
+            remove => throw new NotImplementedException();
         }
 
         event EventHandler<BasicNackEventArgs> IModel.BasicNacks
         {
-            add { throw new NotImplementedException(); }
-            remove { throw new NotImplementedException(); }
+            add => throw new NotImplementedException();
+            remove => throw new NotImplementedException();
         }
 
         event EventHandler<EventArgs> IModel.BasicRecoverOk
         {
-            add { throw new NotImplementedException(); }
-            remove { throw new NotImplementedException(); }
+            add => throw new NotImplementedException();
+            remove => throw new NotImplementedException();
         }
 
         event EventHandler<BasicReturnEventArgs> IModel.BasicReturn
         {
-            add { throw new NotImplementedException(); }
-            remove { throw new NotImplementedException(); }
+            add => throw new NotImplementedException();
+            remove => throw new NotImplementedException();
         }
 
         event EventHandler<CallbackExceptionEventArgs> IModel.CallbackException
         {
-            add { throw new NotImplementedException(); }
-            remove { throw new NotImplementedException(); }
+            add => throw new NotImplementedException();
+            remove => throw new NotImplementedException();
         }
 
         event EventHandler<FlowControlEventArgs> IModel.FlowControl
         {
-            add { throw new NotImplementedException(); }
-            remove { throw new NotImplementedException(); }
+            add => throw new NotImplementedException();
+            remove => throw new NotImplementedException();
         }
 
         event EventHandler<ShutdownEventArgs> IModel.ModelShutdown
         {
-            add { AddedModelShutDownEvent += value; }
-            remove { AddedModelShutDownEvent -= value; }
+            add => AddedModelShutDownEvent += value;
+            remove => AddedModelShutDownEvent -= value;
         }
 
         public EventHandler<ShutdownEventArgs> AddedModelShutDownEvent { get; set; }

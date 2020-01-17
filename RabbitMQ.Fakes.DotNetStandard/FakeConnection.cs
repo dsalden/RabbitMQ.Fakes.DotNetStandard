@@ -97,23 +97,17 @@ namespace RabbitMQ.Fakes
 
         public IProtocol Protocol { get; set; }
 
-        IDictionary<string, object> IConnection.ServerProperties
-        {
-            get { throw new NotImplementedException(); }
-        }
+        IDictionary<string, object> IConnection.ServerProperties => throw new NotImplementedException();
 
-        IList<ShutdownReportEntry> IConnection.ShutdownReport
-        {
-            get { throw new NotImplementedException(); }
-        }
+        IList<ShutdownReportEntry> IConnection.ShutdownReport => throw new NotImplementedException();
 
         public string ClientProvidedName { get; }
         public ConsumerWorkService ConsumerWorkService { get; }
 
         event EventHandler<CallbackExceptionEventArgs> IConnection.CallbackException
         {
-            add { throw new NotImplementedException(); }
-            remove { throw new NotImplementedException(); }
+            add => throw new NotImplementedException();
+            remove => throw new NotImplementedException();
         }
 
         public event EventHandler<EventArgs> RecoverySucceeded;
@@ -122,18 +116,15 @@ namespace RabbitMQ.Fakes
 
         event EventHandler<ShutdownEventArgs> IConnection.ConnectionShutdown
         {
-            add { throw new NotImplementedException(); }
-            remove { throw new NotImplementedException(); }
+            add => throw new NotImplementedException();
+            remove => throw new NotImplementedException();
         }
 
         public event EventHandler<EventArgs> ConnectionUnblocked;
 
         public ushort ChannelMax { get; set; }
 
-        IDictionary<string, object> IConnection.ClientProperties
-        {
-            get { throw new NotImplementedException(); }
-        }
+        IDictionary<string, object> IConnection.ClientProperties => throw new NotImplementedException();
 
         public uint FrameMax { get; set; }
 
