@@ -2,14 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Authors>Kyle Crowley</Authors>
-    <Description>Fake RabbitMQ implementation written in .NET Standard. Based off of RabbitMQ.Fakes (https://github.com/Parametric/RabbitMQ.Fakes)</Description>
+    <Authors>DSalden</Authors>
+    <Description>Fake RabbitMQ implementation written in .NET Standard. Based off of RabbitMQ.Fakes (https://github.com/Parametric/RabbitMQ.Fakes). Fork of https://github.com/KyleCrowley/RabbitMQ.Fakes.DotNetStandard</Description>
     <PackageTags>RabbitMQ AMQP Fake Fakes</PackageTags>
-    <RepositoryUrl>https://github.com/KyleCrowley/RabbitMQ.Fakes.DotNetStandard</RepositoryUrl>
+    <RepositoryUrl>https://github.com/dsalden/RabbitMQ.Fakes.DotNetStandard</RepositoryUrl>
     <Version>1.0.4</Version>
     <AssemblyVersion>1.0.4.0</AssemblyVersion>
     <FileVersion>1.0.4.0</FileVersion>
     <PackageReleaseNotes>Added support for Dead Letter Exchanges (DLX).</PackageReleaseNotes>
+    <RootNamespace>RabbitMQ.Fakes</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
