@@ -10,7 +10,7 @@ namespace RabbitMQ.Fakes.models
         public string Name { get; set; }
         public string Type { get; set; }
         public bool IsDurable { get; set; }
-        public bool AutoDelete { get; set; }
+        public bool IsAutoDelete { get; set; }
         public IDictionary Arguments = new Dictionary<string, object>();
 
         public ConcurrentQueue<RabbitMessage> Messages = new ConcurrentQueue<RabbitMessage>();

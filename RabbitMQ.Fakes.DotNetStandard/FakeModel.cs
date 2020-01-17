@@ -79,7 +79,7 @@ namespace RabbitMQ.Fakes
                 Name = exchange,
                 Type = type,
                 IsDurable = durable,
-                AutoDelete = autoDelete,
+                IsAutoDelete = autoDelete,
                 Arguments = arguments as IDictionary
             };
             Func<string, Exchange, Exchange> updateFunction = (name, existing) => existing;
@@ -453,7 +453,7 @@ namespace RabbitMQ.Fakes
                 {
                     Name = exchange,
                     Arguments = null,
-                    AutoDelete = false,
+                    IsAutoDelete = false,
                     IsDurable = false,
                     Type = "direct"
                 };

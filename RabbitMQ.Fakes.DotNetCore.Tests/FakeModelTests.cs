@@ -188,7 +188,7 @@ namespace RabbitMQ.Fakes.Tests
         private static void AssertExchangeDetails(KeyValuePair<string, Exchange> exchange, string exchangeName, bool isAutoDelete, IDictionary<string, object> arguments, bool isDurable, string exchangeType)
         {
             Assert.That(exchange.Key, Is.EqualTo(exchangeName));
-            Assert.That(exchange.Value.AutoDelete, Is.EqualTo(isAutoDelete));
+            Assert.That(exchange.Value.IsAutoDelete, Is.EqualTo(isAutoDelete));
             Assert.That(exchange.Value.Arguments, Is.EqualTo(arguments));
             Assert.That(exchange.Value.IsDurable, Is.EqualTo(isDurable));
             Assert.That(exchange.Value.Name, Is.EqualTo(exchangeName));
