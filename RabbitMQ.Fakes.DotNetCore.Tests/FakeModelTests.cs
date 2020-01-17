@@ -143,6 +143,28 @@ namespace RabbitMQ.Fakes.Tests
         }
 
         [Test]
+        public void ExchangeDeclare_WithAutoDelete_CreatesExchange()
+        {
+            // Arrange
+            var node = new RabbitServer();
+            var model = new FakeModel(node);
+
+            const string exchangeName = "someExchange";
+            const string exchangeType = "someType";
+            const bool isDurable = true;
+            const bool isAutoDelete = true;
+            var arguments = new Dictionary<string, object>();
+
+            // Act
+            model.ExchangeDeclare(exchange: exchangeName, type: exchangeType, durable: isDurable, autoDelete: isAutoDelete, arguments: arguments);
+
+            model.Close();
+
+            // Assert
+            Assert.That(node.Exchanges, Has.Count.EqualTo(0));
+        }
+
+        [Test]
         public void ExchangeDeclarePassive_WithName_CreatesExchange()
         {
             // Arrange
@@ -418,6 +440,27 @@ namespace RabbitMQ.Fakes.Tests
 
             var queue = node.Queues.First();
             AssertQueueDetails(queue, queueName, isAutoDelete, arguments, isDurable, isExclusive);
+        }
+
+        [Test]
+        public void QueueDeclare_WithAutoDelete_CreatesQueue()
+        {
+            // Arrange
+            var node = new RabbitServer();
+            var model = new FakeModel(node);
+
+            const string queueName = "someQueue";
+            const bool isDurable = true;
+            const bool isExclusive = true;
+            const bool isAutoDelete = true;
+            var arguments = new Dictionary<string, object>();
+
+            // Act
+            model.QueueDeclare(queue: queueName, durable: isDurable, exclusive: isExclusive, autoDelete: isAutoDelete, arguments: arguments);
+            model.Close();
+
+            // Assert
+            Assert.That(node.Queues, Has.Count.EqualTo(0));
         }
 
         private static void AssertQueueDetails(KeyValuePair<string, Queue> queue, string exchangeName, bool isAutoDelete, Dictionary<string, object> arguments, bool isDurable, bool isExclusive)
@@ -712,7 +755,7 @@ namespace RabbitMQ.Fakes.Tests
 
         [TestCase(true, 1, TestName = "If requeue param to BasicNack is true, the message that is nacked should remain in Rabbit")]
         [TestCase(false, 0, TestName = "If requeue param to BasicNack is false, the message that is nacked should be removed from Rabbit")]
-        public void Nacking_Message_Should_Not_Reenqueue_Brand_New_Message(bool requeue, int expectedMessageCount) 
+        public void Nacking_Message_Should_Not_Reenqueue_Brand_New_Message(bool requeue, int expectedMessageCount)
         {
             // arrange
             var node = new RabbitServer();

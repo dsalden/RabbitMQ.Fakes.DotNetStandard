@@ -15,6 +15,8 @@ namespace RabbitMQ.Fakes
     public class FakeModel : IModel
     {
         private readonly RabbitServer _server;
+        private readonly ConcurrentBag<Exchange> _localExchanges = new ConcurrentBag<Exchange>();
+        private readonly ConcurrentBag<Queue> _localQueues = new ConcurrentBag<Queue>();
 
         public FakeModel(RabbitServer server)
         {
@@ -84,6 +86,7 @@ namespace RabbitMQ.Fakes
             };
             Func<string, Exchange, Exchange> updateFunction = (name, existing) => existing;
             _server.Exchanges.AddOrUpdate(exchange, exchangeInstance, updateFunction);
+            _localExchanges.Add(exchangeInstance);
         }
 
         public void ExchangeDeclare(string exchange, string type, bool durable)
@@ -200,6 +203,7 @@ namespace RabbitMQ.Fakes
 
             Func<string, Queue, Queue> updateFunction = (name, existing) => existing;
             _server.Queues.AddOrUpdate(queue, queueInstance, updateFunction);
+            _localQueues.Add(queueInstance);
 
             return new QueueDeclareOk(queue, 0, 0);
         }
@@ -583,6 +587,16 @@ namespace RabbitMQ.Fakes
             IsClosed = true;
             IsOpen = false;
             CloseReason = new ShutdownEventArgs(ShutdownInitiator.Library, replyCode, replyText);
+
+            foreach (var queue in _localQueues.Where(x => x.IsAutoDelete))
+            {
+                QueueDelete(queue.Name);
+            }
+
+            foreach (var exchange in _localExchanges.Where(x => x.IsAutoDelete))
+            {
+                ExchangeDelete(exchange.Name);
+            }
         }
 
         public void Abort()
