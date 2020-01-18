@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using RabbitMQ.Client.Exceptions;
 using Queue = RabbitMQ.Fakes.models.Queue;
 
 namespace RabbitMQ.Fakes
@@ -16,7 +17,7 @@ namespace RabbitMQ.Fakes
     {
         private readonly RabbitServer _server;
         private readonly ConcurrentBag<Exchange> _localExchanges = new ConcurrentBag<Exchange>();
-        private readonly ConcurrentBag<Queue> _localQueues = new ConcurrentBag<Queue>();
+        private readonly ConcurrentDictionary<string, Queue> _localQueues = new ConcurrentDictionary<string, Queue>();
 
         public FakeModel(RabbitServer server)
         {
@@ -201,9 +202,14 @@ namespace RabbitMQ.Fakes
                 Arguments = arguments
             };
 
+            if (exclusive && _server.Queues.ContainsKey(queue) && !_localQueues.ContainsKey(queue))
+            {
+                throw new OperationInterruptedException(new ShutdownEventArgs(ShutdownInitiator.Peer, 405, $"RESOURCE_LOCKED - cannot obtain exclusive access to locked queue '{queue}' in vhost '/'. It could be originally declared on another connection or the exclusive property value does not match that of the original declaration."));
+            }
+
             Func<string, Queue, Queue> updateFunction = (name, existing) => existing;
             _server.Queues.AddOrUpdate(queue, queueInstance, updateFunction);
-            _localQueues.Add(queueInstance);
+            _localQueues.AddOrUpdate(queue, queueInstance, updateFunction);
 
             return new QueueDeclareOk(queue, 0, 0);
         }
@@ -588,9 +594,9 @@ namespace RabbitMQ.Fakes
             IsOpen = false;
             CloseReason = new ShutdownEventArgs(ShutdownInitiator.Library, replyCode, replyText);
 
-            foreach (var queue in _localQueues.Where(x => x.IsAutoDelete))
+            foreach (var queue in _localQueues.Where(x => x.Value.IsAutoDelete))
             {
-                QueueDelete(queue.Name);
+                QueueDelete(queue.Key);
             }
 
             foreach (var exchange in _localExchanges.Where(x => x.IsAutoDelete))

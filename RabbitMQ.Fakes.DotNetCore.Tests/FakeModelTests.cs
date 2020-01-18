@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using RabbitMQ.Client.Exceptions;
 using Queue = RabbitMQ.Fakes.models.Queue;
 
 namespace RabbitMQ.Fakes.Tests
@@ -461,6 +462,55 @@ namespace RabbitMQ.Fakes.Tests
 
             // Assert
             Assert.That(node.Queues, Has.Count.EqualTo(0));
+        }
+
+        [Test]
+        public void QueueDeclare_WithExclusive_SameModel_CreatesQueue()
+        {
+            // Arrange
+            var node = new RabbitServer();
+            var model = new FakeModel(node);
+
+            const string queueName = "someQueue";
+            const bool isDurable = true;
+            const bool isExclusive = true;
+            const bool isAutoDelete = true;
+            var arguments = new Dictionary<string, object>();
+
+            // Act
+            model.QueueDeclare(queue: queueName, durable: isDurable, exclusive: isExclusive, autoDelete: isAutoDelete, arguments: arguments);
+            model.QueueDeclare(queue: queueName, durable: isDurable, exclusive: isExclusive, autoDelete: isAutoDelete, arguments: arguments);
+
+            // Assert
+            Assert.That(node.Queues, Has.Count.EqualTo(1));
+
+            var queue = node.Queues.First();
+            AssertQueueDetails(queue, queueName, isAutoDelete, arguments, isDurable, isExclusive);
+        }
+
+        [Test]
+        public void QueueDeclare_WithExclusive_DifferentModel_CreatesQueue()
+        {
+            // Arrange
+            var node = new RabbitServer();
+            var model = new FakeModel(node);
+            var model2 = new FakeModel(node);
+
+            const string queueName = "someQueue";
+            const bool isDurable = true;
+            const bool isExclusive = true;
+            const bool isAutoDelete = true;
+            var arguments = new Dictionary<string, object>();
+
+            // Act
+            model.QueueDeclare(queue: queueName, durable: isDurable, exclusive: isExclusive, autoDelete: isAutoDelete, arguments: arguments);
+            var ex = Assert.Throws<OperationInterruptedException>(
+                delegate { model2.QueueDeclare(queue: queueName, durable: isDurable, exclusive: isExclusive, autoDelete: isAutoDelete, arguments: arguments); });
+
+            // Assert
+            Assert.That(ex.ShutdownReason.ReplyCode, Is.EqualTo(405));
+            Assert.That(ex.ShutdownReason.Initiator, Is.EqualTo(ShutdownInitiator.Peer));
+            StringAssert.StartsWith($"RESOURCE_LOCKED - cannot obtain exclusive access to locked queue '{queueName}'", ex.ShutdownReason.ReplyText);
         }
 
         private static void AssertQueueDetails(KeyValuePair<string, Queue> queue, string exchangeName, bool isAutoDelete, Dictionary<string, object> arguments, bool isDurable, bool isExclusive)
